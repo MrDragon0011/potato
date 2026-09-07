@@ -3,7 +3,7 @@ const app = express();
 const fs = require('fs');
 app.use(express.json());
 app.use(express.static('public'));
-const messages = [];
+let messages = [];
 try {
   messages = JSON.parse(fs.readFileSync('messages.json', 'utf8'));
 } catch {
