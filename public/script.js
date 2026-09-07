@@ -168,7 +168,7 @@ function mobile() {
 }
 
 if (mobile()) {
-  alert('TAD Chat works best on PC. Click OK to continue.')
+  alert('TAD Chat works best on PC. Click close to continue.')
 }
 
 
