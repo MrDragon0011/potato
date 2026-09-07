@@ -1,5 +1,21 @@
 const vegetables = ['Potato', 'Cucumber', 'Tomato', 'Carrot']
 
+const ADMIN_NAME = 'LAWRENCEEEEE';
+
+function makeCrownIcon() {
+  const span = document.createElement('span');
+  span.className = 'crown';
+  span.title = ADMIN_NAME;
+  span.setAttribute('role', 'img');
+  span.setAttribute('aria-label', 'crown');
+  span.innerHTML =
+    '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true">' +
+    '<path fill="#F5C518" stroke="#B8860B" stroke-width="1" stroke-linejoin="round" ' +
+    'd="M2 8l4.5 3L12 4l5.5 7L22 8l-2 11H4L2 8z"/>' +
+    '</svg>';
+  return span;
+}
+
 function randomAnonName() {
   const veg = vegetables[Math.floor(Math.random() * vegetables.length)];
   const num = String(Math.floor(Math.random() * 10000) + 1);
@@ -61,7 +77,10 @@ async function loadMessages() {
     const code = document.createElement('code');
     const divtext = document.createElement('span');
     code.textContent = ` ${new Date(m.time).toLocaleTimeString()}`;
-    divtext.textContent = `${m.name}: ${m.text}`;
+    if (m.name === ADMIN_NAME) {
+      divtext.appendChild(makeCrownIcon());
+    }
+    divtext.appendChild(document.createTextNode(`${m.name}: ${m.text}`));
     div.appendChild(divtext)
     div.appendChild(code);
     chatBox.appendChild(div);
@@ -134,3 +153,4 @@ async function getUserCount() {
 }
 
 setInterval(getUserCount, 30000);
+getUserCount();
