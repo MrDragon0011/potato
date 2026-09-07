@@ -3,14 +3,13 @@ let myName = localStorage.getItem('handle');
 
 if (!myName){
   const veg = vegetables[Math.floor(Math.random() * vegetables.length)];
-  const num = Math.floor(Math.random() * 100);
   myName = 'Anonymous ' + veg;
   localStorage.setItem('handle', myName);
 }
 
-const chatBox = document.getElementById('chat-box')
+const input = document.getElementById('message-input')
 chatBox.addEventListener('keydown', (event) => {
-  if (event.key === Enter){
+  if (event.key === 'Enter'){
     sendMessage()
   }
 })
