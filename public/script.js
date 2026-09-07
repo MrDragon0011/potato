@@ -74,3 +74,39 @@ async function updateUsername(){
 
 setInterval(loadMessages, 3000);
 loadMessages();
+
+function typewriter(el, text, speed = 90) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = text;
+    return;
+  }
+  el.textContent = '';
+  el.classList.add('typing');
+  let i = 0;
+  (function tick() {
+    if (i < text.length) {
+      el.textContent += text.charAt(i);
+      i += 1;
+      setTimeout(tick, speed);
+    } else {
+      el.classList.remove('typing');
+    }
+  })();
+}
+
+const heading = document.querySelector('.chat-side h1');
+if (heading) {
+  typewriter(heading, heading.textContent.trim());
+}
+
+async function getUserCount() {
+  const userDisplay = document.getElementById('user-count')
+  const res = await fetch('/users');
+  const users = await res.json();
+  const count = users.length;
+  if (userDisplay) {
+    userDisplay.textContent = count;
+  }
+}
+
+setInterval(getUserCount(), 30000);
