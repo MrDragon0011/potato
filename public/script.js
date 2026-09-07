@@ -1,18 +1,34 @@
 const vegetables = ['Potato', 'Cucumber', 'Tomato', 'Carrot']
+
+function randomAnonName() {
+  const veg = vegetables[Math.floor(Math.random() * vegetables.length)];
+  const num = String(Math.floor(Math.random() * 10000) + 1);
+  return 'Anonymous' + veg + num;
+}
+
 let myName = localStorage.getItem('handle');
 
 if (!myName){
-  const veg = vegetables[Math.floor(Math.random() * vegetables.length)];
-  const num = String(Math.floor(Math.random() * 1000) + 1);
-  myName = 'Anonymous ' + veg + num;
+  myName = randomAnonName();
   localStorage.setItem('handle', myName);
 }
 
-fetch('/users', {
-  method: 'POST',
-  headers: {'Content-Type': 'application/json'},
-  body: JSON.stringify({name: myName}),
-});
+async function registerName() {
+  const res = await fetch('/users', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name: myName, prevName: myName}),
+  });
+
+  // Stored name clashed with someone else - pick a new one and retry.
+  if (res.status === 409) {
+    myName = randomAnonName();
+    localStorage.setItem('handle', myName);
+    return registerName();
+  }
+}
+
+registerName();
 
 const input = document.getElementById('message-input')
 input.addEventListener('keydown', (event) => {
@@ -60,14 +76,21 @@ async function updateUsername(){
 
   if (newName === '') return;
 
-  myName = newName;
-  localStorage.setItem('handle', newName);
-
-  await fetch('/users', {
+  const res = await fetch('/users', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name: newName}),
+    body: JSON.stringify({name: newName, prevName: myName}),
   });
+
+  if (!res.ok) {
+    const { error } = await res.json();
+    alert(error || 'Could not set that username.');
+    return;
+  }
+
+  const data = await res.json();
+  myName = data.name;
+  localStorage.setItem('handle', myName);
 
   input.value = "";
   loadMessages();
@@ -110,4 +133,4 @@ async function getUserCount() {
   }
 }
 
-setInterval(getUserCount(), 30000);
+setInterval(getUserCount, 30000);

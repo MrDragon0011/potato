@@ -18,10 +18,41 @@ try {
   users = [];
 }
 
+function normalize(name) {
+  return (name || '').trim();
+}
+
+// Used by POST /messages - just records the name, no rejection.
 function rememberUser(name) {
-  if (!name || users.includes(name)) return;
-  users.push(name);
+  const trimmed = normalize(name);
+  if (!trimmed || users.includes(trimmed)) return;
+  users.push(trimmed);
   fs.writeFileSync('users.json', JSON.stringify(users));
+}
+
+// Used by POST /users - enforces uniqueness, lets you rename yourself.
+function claimUsername(rawName, prevName) {
+  const name = normalize(rawName);
+  if (!name) {
+    return { ok: false, error: 'Username cannot be empty.' };
+  }
+
+  const lower = name.toLowerCase();
+  const takenByOther = users.some(
+    (u) => u.toLowerCase() === lower && u !== prevName
+  );
+  if (takenByOther) {
+    return { ok: false, error: 'That username is already taken.' };
+  }
+
+  if (prevName) {
+    users = users.filter((u) => u !== prevName); // release old name
+  }
+  if (!users.includes(name)) {
+    users.push(name);
+  }
+  fs.writeFileSync('users.json', JSON.stringify(users));
+  return { ok: true, name };
 }
 
 app.get('/ping', (req, res) => {
@@ -45,8 +76,11 @@ app.get('/messages', (req, res) => {
 })
 
 app.post('/users', (req, res) => {
-  rememberUser(req.body.name);
-  res.json(users);
+  const result = claimUsername(req.body.name, req.body.prevName);
+  if (!result.ok) {
+    return res.status(409).json(result);
+  }
+  res.json({ ok: true, name: result.name, users });
 })
 
 app.get('/users', (req, res) => {
