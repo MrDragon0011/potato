@@ -1,6 +1,6 @@
 .chat-container{
   width: 500px;
-  margin:50px auto;
+  margin:50px auto 0;
   border: 1px solid #ccc;
   padding:10px;
   border-radius: 8px;
@@ -23,4 +23,17 @@
 
 button{
   padding: 6px 12px;
+}
+
+.username-row{
+  margin-top: 10px;
+  padding-left: 440px;
+  width: 500px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+#username-input{
+  padding:10px;
+  font-family: Arial, sans-serif;
 }

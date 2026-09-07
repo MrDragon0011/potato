@@ -53,5 +53,24 @@ async function loadMessages() {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+async function updateUsername(){
+  const input = document.getElementById('username-input');
+  const newName = input.value.trim();
+
+  if (newName === '') return;
+
+  myName = newName;
+  localStorage.setItem('handle', newName);
+
+  await fetch('/users', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name: newName}),
+  });
+
+  input.value = "";
+  loadMessages();
+}
+
 setInterval(loadMessages, 3000);
 loadMessages();
