@@ -1,0 +1,38 @@
+const vegetables = ['Potato', 'Cucumber', 'Tomato', 'Carrot']
+let myName = localStorage.getItem('handle');
+
+if (!myName){
+  myName = 'Anonymous ' + vegetables[Math.random() * vegetables.length]
+Math.floor(Math.random() * 100);
+  localStorage.setItem('handle', myName);
+}
+
+async function sendMessage() {
+  const input = document.getElementById('message-input')
+  if (input.value.trim() === '') return;
+
+  await fetch('/messages', {
+    method: 'POST',
+    headers: {'Content-Type': 'appplication/json'},
+    body: JSON.stringify({name: myName, text: input.value}),
+  });
+  input.value = '';
+  loadMessages();
+} 
+
+async function loadMessages() {
+  const res = await fetch('/messages');
+  const messages = await res.json();
+  const chatBox = document.getElementById('chat-box');
+  chatBox.innerHTML = ''
+  messages.forEach((m) => {
+    const div = document.createElement('div');
+    div.textContent = `${m.name}: ${m.text}`;
+    chatBox.appendChild(div);
+
+  });
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+setInterval(loadMessages(), 3000);
+loadMessages();
