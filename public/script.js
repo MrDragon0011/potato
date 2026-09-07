@@ -35,7 +35,12 @@ async function loadMessages() {
   chatBox.innerHTML = ''
   messages.forEach((m) => {
     const div = document.createElement('div');
-    div.textContent = `${m.name}: ${m.text}`;
+    const code = document.createElement('code');
+    const divtext = document.createElement('span');
+    code.textContent = ` ${new Date(m.time).toLocaleTimeString()}`;
+    divtext.textContent = `${m.name}: ${m.text}`;
+    div.appendChild(divtext)
+    div.appendChild(code);
     chatBox.appendChild(div);
 
   });
