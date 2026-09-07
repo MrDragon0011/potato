@@ -2,8 +2,9 @@ const vegetables = ['Potato', 'Cucumber', 'Tomato', 'Carrot']
 let myName = localStorage.getItem('handle');
 
 if (!myName){
-  myName = 'Anonymous ' + vegetables[Math.random() * vegetables.length]
-Math.floor(Math.random() * 100);
+  const veg = vegetables[Math.floor(Math.random() * vegetables.length)];
+  const num = Math.floor(Math.random() * 100);
+  myName = 'Anonymous ' + veg + ' ' + num;
   localStorage.setItem('handle', myName);
 }
 
@@ -13,7 +14,7 @@ async function sendMessage() {
 
   await fetch('/messages', {
     method: 'POST',
-    headers: {'Content-Type': 'appplication/json'},
+    headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({name: myName, text: input.value}),
   });
   input.value = '';
@@ -34,5 +35,5 @@ async function loadMessages() {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-setInterval(loadMessages(), 3000);
+setInterval(loadMessages, 3000);
 loadMessages();
