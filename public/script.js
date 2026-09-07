@@ -8,8 +8,9 @@ if (!myName){
 }
 
 const input = document.getElementById('message-input')
-chatBox.addEventListener('keydown', (event) => {
+input.addEventListener('keydown', (event) => {
   if (event.key === 'Enter'){
+    event.preventDefault()
     sendMessage()
   }
 })
