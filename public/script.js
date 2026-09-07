@@ -8,6 +8,13 @@ if (!myName){
   localStorage.setItem('handle', myName);
 }
 
+const chatBox = document.getElementById('chat-box')
+chatBox.addEventListener('keydown', (event) => {
+  if (event.key === Enter){
+    sendMessage()
+  }
+})
+
 async function sendMessage() {
   const input = document.getElementById('message-input')
   if (input.value.trim() === '') return;
