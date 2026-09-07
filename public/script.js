@@ -152,5 +152,25 @@ async function getUserCount() {
   }
 }
 
+function mobile() {
+  if (navigator.userAgentData?.mobile) {
+    return true;
+  }
+  const hasTouch = window.matchMedia("(any-pointer: coarse)").matches || navigator.maxTouchPoints > 0;
+  const isSmallScreen = window.matchMedia("(max-width: 768px)").matches;
+  
+  if (hasTouch && isSmallScreen) {
+    return true;
+  }
+
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+}
+
+if (mobile()) {
+  alert('TAD Chat works best on PC. Click OK to continue.')
+}
+
+
 setInterval(getUserCount, 30000);
 getUserCount();
