@@ -3,7 +3,8 @@ let myName = localStorage.getItem('handle');
 
 if (!myName){
   const veg = vegetables[Math.floor(Math.random() * vegetables.length)];
-  myName = 'Anonymous ' + veg;
+  const num = String(Math.floor(Math.random() * 1000) + 1);
+  myName = 'Anonymous ' + veg + num;
   localStorage.setItem('handle', myName);
 }
 
