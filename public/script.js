@@ -7,6 +7,12 @@ if (!myName){
   localStorage.setItem('handle', myName);
 }
 
+fetch('/users', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({name: myName}),
+});
+
 const input = document.getElementById('message-input')
 input.addEventListener('keydown', (event) => {
   if (event.key === 'Enter'){
