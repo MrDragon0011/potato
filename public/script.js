@@ -9,7 +9,7 @@ function makeCrownIcon() {
   span.setAttribute('role', 'img');
   span.setAttribute('aria-label', 'crown');
   span.innerHTML =
-    '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true">' +
+    '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" description="Admin">' +
     '<path fill="#F5C518" stroke="#B8860B" stroke-width="1" stroke-linejoin="round" ' +
     'd="M2 8l4.5 3L12 4l5.5 7L22 8l-2 11H4L2 8z"/>' +
     '</svg>';
