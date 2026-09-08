@@ -141,3 +141,12 @@ button{
 .gh-icon{
   flex-shrink: 0;
 }
+
+.tos{
+  font-size: 12px;
+}
+
+.tos a{
+  text-decoration: none;
+  color: #2d6bce;
+}
