@@ -94,3 +94,50 @@ button{
   padding:10px;
   font-family: Arial, sans-serif;
 }
+
+#forum-list{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.forum-btn{
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.forum-btn.active{
+  border-color: #000;
+  background: #f0f0f0;
+}
+
+.forum-label{
+  font-weight: bold;
+}
+
+.forum-blurb-inline{
+  margin-left: 6px;
+  color: #666;
+  font-weight: normal;
+}
+
+.forum-blurb-inline::before{
+  content: "\2022";
+  margin-right: 6px;
+}
+
+.view-source{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: #2d6bce;
+}
+
+.gh-icon{
+  flex-shrink: 0;
+}

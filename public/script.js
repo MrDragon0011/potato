@@ -1,7 +1,5 @@
-const { faLaughBeam } = require("@fortawesome/free-solid-svg-icons");
-
 const vegetables = ['Potato', 'Cucumber', 'Tomato', 'Carrot']
-const forums = [
+const FORUMS = [
   {id: 'math-on-level', label: 'On Level Math', blurb: 'Algebra I'},
   {id: 'math-honors', label: 'Honors Math', blurb: 'Algebra I-H'},
   {id: 'science-lane', label: 'Science', blurb: "Dr. Lane's classes"},
@@ -12,7 +10,7 @@ const forums = [
 
 ];
 
-let currentForum = 'Home';
+let currentForum = FORUMS[0].id;
 
 const ADMIN_NAME = 'LAWRENCEEEEE';
 
@@ -74,14 +72,15 @@ async function sendMessage() {
   await fetch('/messages', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name: myName, text: input.value}),
+    body: JSON.stringify({name: myName, text: input.value, forum: currentForum}),
   });
   input.value = '';
   loadMessages();
 } 
 
 async function loadMessages() {
-  const res = await fetch('/messages');
+  const res = await fetch('/messages?forum=' + currentForum);
+  if (!res.ok) return;
   const messages = await res.json();
   const chatBox = document.getElementById('chat-box');
   chatBox.innerHTML = ''
@@ -127,9 +126,6 @@ async function updateUsername(){
   input.value = "";
   loadMessages();
 }
-
-setInterval(loadMessages, 3000);
-loadMessages();
 
 function typewriter(el, text, speed = 90) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -193,15 +189,36 @@ function loadForumList() {
   nav.innerHTML = '';
   FORUMS.forEach((f) => {
     const btn = document.createElement('button');
-    btn.className = 'forum-btn';
-    btn.textContent = f.label;
+    btn.className = 'forum-btn' + (f.id === currentForum ? ' active' : '');
     btn.dataset.forum = f.id;
+
+    const label = document.createElement('span');
+    label.className = 'forum-label';
+    label.textContent = f.label;
+
+    const blurb = document.createElement('span');
+    blurb.className = 'forum-blurb-inline';
+    blurb.textContent = ' ' + f.blurb;
+
+    btn.append(label, blurb);
     btn.addEventListener('click', () => switchForum(f.id));
     nav.appendChild(btn);
   });
-  currentForum.classList.add(' active');
  }
 
+function switchForum(id){
+  if (!forumByID(id)) return;
+
+  currentForum = id;
+  loadForumList();
+  const blurb = document.getElementById('forum-blurb');
+  if (blurb) blurb.textContent = forumByID(id).blurb;
+  loadMessages();
+}
 
 setInterval(getUserCount, 30000);
 getUserCount();
+loadForumList();
+switchForum(currentForum);
+setInterval(loadMessages, 3000);
+loadMessages();
