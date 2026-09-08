@@ -93,7 +93,11 @@ app.post('/messages', async (req, res) => {
 });
 
 app.get('/messages', (req, res) => {
-  res.json(messages);
+  const forum = req.query.forum;
+  if (!isForum(forum)) {
+    return res.status(400).json({ ok: false, error: 'Unknown forum.' });
+  }
+  res.json(messages[forum] || []);
 });
 
 app.post('/users', async (req, res) => {
