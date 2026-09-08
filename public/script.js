@@ -1,4 +1,18 @@
+const { faLaughBeam } = require("@fortawesome/free-solid-svg-icons");
+
 const vegetables = ['Potato', 'Cucumber', 'Tomato', 'Carrot']
+const forums = [
+  {id: 'math-on-level', label: 'On Level Math', blurb: 'Algebra I'},
+  {id: 'math-honors', label: 'Honors Math', blurb: 'Algebra I-H'},
+  {id: 'science-lane', label: 'Science', blurb: "Dr. Lane's classes"},
+  {id: 'science-carron', label: 'Science', blurb: "Mr. Carron's classes"},
+  {id: 'humanities-alipour', label: 'Humanities', blurb: "Mrs. Alipour's class"},
+  {id: 'humanities-fox', label: 'Humanities', blurb: "Mr. Fox's class"},
+  {id: 'humanities-balan', label: 'Humanities', blurb: "Ms. Balan's Classes"}
+
+];
+
+let currentForum = 'Home';
 
 const ADMIN_NAME = 'LAWRENCEEEEE';
 
@@ -36,7 +50,6 @@ async function registerName() {
     body: JSON.stringify({name: myName, prevName: myName}),
   });
 
-  // Stored name clashed with someone else - pick a new one and retry.
   if (res.status === 409) {
     myName = randomAnonName();
     localStorage.setItem('handle', myName);
@@ -170,6 +183,24 @@ function mobile() {
 if (mobile()) {
   alert('TAD Chat works best on PC. Click close to continue.')
 }
+
+function forumByID(id){
+  return FORUMS.find((f) => f.id === id);
+}
+
+function loadForumList() {
+  const nav = document.getElementById('forum-list');
+  nav.innerHTML = '';
+  FORUMS.forEach((f) => {
+    const btn = document.createElement('button');
+    btn.className = 'forum-btn';
+    btn.textContent = f.label;
+    btn.dataset.forum = f.id;
+    btn.addEventListener('click', () => switchForum(f.id));
+    nav.appendChild(btn);
+  });
+  currentForum.classList.add(' active');
+ }
 
 
 setInterval(getUserCount, 30000);

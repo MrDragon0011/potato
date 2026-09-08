@@ -8,11 +8,23 @@
 </head>
 <body>
   <div class="chat-layout">
+    <div class="chat-side-left">
+      <h3>Open Discussions</h3>
+      <nav id="forum-list">
+      
+      </nav>
+      <p id="forum-blurb"></p>
+    </div>
     <div class="chat-container">
       <div class="chat-box" id="chat-box"></div>
       <div class="input-row">
         <input type="text" id="message-input" placeholder="Message anonymously">
         <button onclick="sendMessage()">Send</button>
+      </div>
+      <div class="username-row">
+        <span>Messaging as:</span>
+        <input type="text" id="username-input" placeholder="Enter a username">
+        <button onclick="updateUsername()">Submit</button>
       </div>
     </div>
     <div class="chat-side">
@@ -21,12 +33,9 @@
       <strong>dedicated to Terry A. Davis</strong>
       <p>Made by cookiemonster</p>
       <p><span id="user-count"></span> total users</p>
+      <p><strong>What is TAD Chat?</strong><br>TAD Chat is a global chat application for the class of 2031 to communicate. </p>
+      <p><strong>Is TAD Chat private?</strong><br>We store your usernames and messages, but these are not shared with anyone.</p>
     </div>
-  </div>
-  <div class="username-row">
-    <span>Messaging as:</span>
-    <input type="text" id="username-input" placeholder="Enter a username">
-    <button onclick="updateUsername()">Submit</button>
   </div>
   <script src="script.js"></script>
 </body>
