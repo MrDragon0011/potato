@@ -13,7 +13,7 @@ const FORUMS = [
 const fromHash = location.hash.replace('#', '');
 let currentForum = forumByID(fromHash) ? fromHash : FORUMS[0].id;
 
-const ADMIN_NAME = 'LAWRENCEEEEE';
+const ADMIN_NAME = 'lawrence';
 
 function makeCrownIcon() {
   const span = document.createElement('span');
