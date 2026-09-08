@@ -4,7 +4,6 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 const redis = Redis.fromEnv();
-const MESSAGES_KEY = 'messages';
 const USERS_KEY = 'users';
 const forum_ids = ['math-on-level', 'math-honors', 'science-lane',  'science-carron', 'humanities-alipour', 'humanities-fox', 'humanities-balan'];
 const isForum = (id) => forum_ids.includes(id);
@@ -12,18 +11,20 @@ const messagesKey = (forum) => 'messages:' + forum;
 let messages = {};
 let users = [];
 
+const normalize = (value) => (typeof value === 'string' ? value.trim() : '');
+
 
 async function loadState() {
-  const [storedMessages, storedUsers] = await Promise.all([
-    redis.get(MESSAGES_KEY),
-    redis.get(USERS_KEY),
-  ]);
-  messages = Array.isArray(storedMessages) ? storedMessages : [];
-  users = Array.isArray(storedUsers) ? storedUsers : [];
-}
+  const entries = await Promise.all(
+    forum_ids.map(async (id) => [id, await redis.get(messagesKey(id))])
+  );
+  messages = {};
+  for (const [id, stored] of entries) {
+    messages[id] = Array.isArray(stored) ? stored : [];
+  }
 
-function normalize(name) {
-  return (name || '').trim();
+  const storedUsers = await redis.get(USERS_KEY);
+  users = Array.isArray(storedUsers) ? storedUsers : [];
 }
 
 async function rememberUser(name) {
@@ -62,16 +63,21 @@ app.get('/ping', (req, res) => {
 });
 
 app.post('/messages', async (req, res) => {
+  const forum = req.body.forum;
+  if (!isForum(forum)) {
+    return res.status(400).json({ ok: false, error: 'Unknown forum.' });
+  }
+
   const msg = {
     name: req.body.name,
     text: req.body.text,
     time: Date.now(),
   };
 
-  const next = [...messages, msg];
+  const next = [...(messages[forum] || []), msg];
   try {
-    await redis.set(MESSAGES_KEY, next);
-    messages = next;
+    await redis.set(messagesKey(forum), next);
+    messages[forum] = next;
   } catch (err) {
     console.error('Failed to save message:', err);
     return res.status(500).json({ ok: false, error: 'Could not save message.' });
@@ -111,7 +117,7 @@ const PORT = process.env.PORT || 3000;
 
 loadState()
   .then(() => {
-    app.listen(PORT, () => console.log('Server running on port ' + PORT));``
+    app.listen(PORT, () => console.log('Server running on port ' + PORT));
   })
   .catch((err) => {
     console.error('Failed to load state from Redis:', err);

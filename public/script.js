@@ -10,7 +10,8 @@ const FORUMS = [
 
 ];
 
-let currentForum = FORUMS[0].id;
+const fromHash = location.hash.replace('#', '');
+let currentForum = forumByID(fromHash) ? fromHash : FORUMS[0].id;
 
 const ADMIN_NAME = 'LAWRENCEEEEE';
 
@@ -210,11 +211,19 @@ function switchForum(id){
   if (!forumByID(id)) return;
 
   currentForum = id;
+  location.hash = id;
   loadForumList();
   const blurb = document.getElementById('forum-blurb');
   if (blurb) blurb.textContent = forumByID(id).blurb;
   loadMessages();
 }
+
+window.addEventListener('hashchange', () => {
+  const id = location.hash.replace('#', '');
+  if (forumByID(id) && id !== currentForum) {
+    switchForum(id);
+  }
+});
 
 setInterval(getUserCount, 30000);
 getUserCount();
