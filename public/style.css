@@ -12,6 +12,7 @@
   border: 0.5px solid #000;
   border-radius: 8px;
   font-family: Arial, sans-serif;
+  padding: 5px;
 }
 
 .chat-container{
@@ -99,6 +100,7 @@ button{
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: 10px;
 }
 
 .forum-btn{
