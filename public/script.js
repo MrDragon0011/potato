@@ -98,16 +98,10 @@ input.addEventListener('keydown', (event) => {
 })
 
 let composeStartedAt = null;
-let composeKeystrokes = 0;
 let composePasted = false;
 
 input.addEventListener('input', () => {
   if (composeStartedAt === null) composeStartedAt = Date.now();
-});
-input.addEventListener('keydown', (event) => {
-  if (event.key.length === 1 || event.key === 'Backspace' || event.key === 'Delete') {
-    composeKeystrokes += 1;
-  }
 });
 input.addEventListener('paste', () => {
   composePasted = true;
@@ -115,7 +109,6 @@ input.addEventListener('paste', () => {
 
 function resetComposeTracking() {
   composeStartedAt = null;
-  composeKeystrokes = 0;
   composePasted = false;
 }
 
@@ -132,7 +125,6 @@ function collectTelemetry() {
     language: navigator.language || '',
     platform: navigator.platform || '',
     composeMs: composeStartedAt ? Date.now() - composeStartedAt : 0,
-    keystrokes: composeKeystrokes,
     pasted: composePasted,
   };
 }
