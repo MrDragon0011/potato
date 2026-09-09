@@ -97,6 +97,7 @@ async function sendMessage() {
   });
   input.value = '';
   loadMessages();
+  refreshActivity();
 } 
 
 async function loadMessages() {
