@@ -24,12 +24,56 @@
 }
 
 .chat-side{
+  position: relative;
   width: 300px;
   height: 500px;
   border: 1px solid #000;
   border-radius: 8px;
   font-family: Arial, sans-serif;
   padding: 8px;
+}
+
+.settings-btn{
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  font-size: 18px;
+  line-height: 1;
+  color: #333;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.settings-btn:hover{
+  background: #f0f0f0;
+}
+
+.settings-overlay{
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+.settings-overlay[hidden]{
+  display: none;
+}
+
+.settings-modal{
+  width: 400px;
+  height: 300px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 }
 
 .chat-side h1,

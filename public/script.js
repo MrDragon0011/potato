@@ -1,5 +1,6 @@
 const vegetables = ['Potato', 'Cucumber', 'Tomato', 'Carrot']
 const FORUMS = [
+  {id: 'general-discussion', label: 'General Discussion', blurb: ' '},
   {id: 'math-on-level', label: 'On Level Math', blurb: 'Algebra I'},
   {id: 'math-honors', label: 'Honors Math', blurb: 'Algebra I-H'},
   {id: 'science-lane', label: 'Science', blurb: "Dr. Lane's classes"},
@@ -147,6 +148,26 @@ async function updateUsername(){
 
   input.value = "";
   loadMessages();
+}
+
+const settingsOverlay = document.getElementById('settings-overlay');
+
+settingsOverlay.addEventListener('click', (event) => {
+  if (event.target === settingsOverlay) closeSettings();
+});
+
+function openSettings() {
+  settingsOverlay.hidden = false;
+  document.addEventListener('keydown', onSettingsKeydown);
+}
+
+function closeSettings() {
+  settingsOverlay.hidden = true;
+  document.removeEventListener('keydown', onSettingsKeydown);
+}
+
+function onSettingsKeydown(event) {
+  if (event.key === 'Escape') closeSettings();
 }
 
 function typewriter(el, text, speed = 90) {

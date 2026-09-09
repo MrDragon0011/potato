@@ -5,7 +5,7 @@ app.use(express.json());
 app.use(express.static('public'));
 const redis = Redis.fromEnv();
 const USERS_KEY = 'users';
-const forum_ids = ['math-on-level', 'math-honors', 'science-lane',  'science-carron', 'humanities-alipour', 'humanities-fox', 'humanities-balan'];
+const forum_ids = ['general-discussion','math-on-level', 'math-honors', 'science-lane',  'science-carron', 'humanities-alipour', 'humanities-fox', 'humanities-balan', 'humanities-rutherford'];
 const isForum = (id) => forum_ids.includes(id);
 const messagesKey = (forum) => 'messages:' + forum;
 let messages = {};
