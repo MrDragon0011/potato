@@ -10,6 +10,25 @@ const FORUMS = [
 
 ];
 
+let activity = {};
+let seen = loadSeen();
+
+function loadSeen(){
+  try {
+    return JSON.parse(localStorage.getItem('seen')) || {}; 
+  } catch {
+    return {};
+  }
+}
+
+function saveSeen(){
+  localStorage.setItem('seen', JSON.stringify(seen));
+}
+
+function unreadCount(id) {
+  return Math.max(0, (activity[id] || 0) - (seen[id] || 0));
+}
+
 const fromHash = location.hash.replace('#', '');
 let currentForum = forumByID(fromHash) ? fromHash : FORUMS[0].id;
 
@@ -203,8 +222,20 @@ function loadForumList() {
 
     btn.append(label, blurb);
     btn.addEventListener('click', () => switchForum(f.id));
+    
+    const count = unreadCount(f.id);
+    if (count > 0){
+      btn.classList.add('unread');
+
+      const badge = document.createElement('span');
+      badge.className = 'unread-badge';
+      badge.textContent = count > 9 ? '9+' : String(count);
+      btn.appendChild(badge);
+    }
+
     nav.appendChild(btn);
   });
+  updateTitle();
  }
 
 function switchForum(id){
@@ -216,6 +247,7 @@ function switchForum(id){
   const blurb = document.getElementById('forum-blurb');
   if (blurb) blurb.textContent = forumByID(id).blurb;
   loadMessages();
+  refreshActivity();
 }
 
 window.addEventListener('hashchange', () => {
@@ -225,9 +257,25 @@ window.addEventListener('hashchange', () => {
   }
 });
 
+async function refreshActivity() {
+  const res = await fetch('activity');
+  if (!res.ok) return;
+  seen[currentForum] = activity[currentForum] || 0;
+  activity = await res.json();
+  saveSeen();
+  loadForumList();
+}
+
+function updateTitle() {
+  const total = FORUMS.reduce((sum, f) => sum + unreadCount(f.id), 0);
+  document.title = (total > 0 ? '(' + total +') ' : '') + 'TAD Chat';
+}
+
+// Intervals
 setInterval(getUserCount, 30000);
 getUserCount();
 loadForumList();
 switchForum(currentForum);
 setInterval(loadMessages, 3000);
 loadMessages();
+setInterval(refreshActivity, 3000);

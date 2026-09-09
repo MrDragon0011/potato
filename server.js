@@ -117,6 +117,15 @@ app.get('/users', (req, res) => {
   res.json(users);
 });
 
+app.get('/activity', (req, res) =>{
+  const counts = {};
+  for (const id of forum_ids) {
+    counts[id] = (messages[id] || []).length;
+  }
+  res.json(counts);
+})
+
+
 const PORT = process.env.PORT || 3000;
 
 loadState()
