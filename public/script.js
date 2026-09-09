@@ -6,7 +6,8 @@ const FORUMS = [
   {id: 'science-carron', label: 'Science', blurb: "Mr. Carron's classes"},
   {id: 'humanities-alipour', label: 'Humanities', blurb: "Mrs. Alipour's class"},
   {id: 'humanities-fox', label: 'Humanities', blurb: "Mr. Fox's class"},
-  {id: 'humanities-balan', label: 'Humanities', blurb: "Ms. Balan's Classes"}
+  {id: 'humanities-balan', label: 'Humanities', blurb: "Ms. Balan's classes"},
+  {id: 'humanities-rutherford', label: 'Humanities', blurb: "Mr. Rutherford's classes"}
 
 ];
 
