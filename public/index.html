@@ -47,7 +47,9 @@
   </div>
   <div id="settings-overlay" class="settings-overlay" role="dialog" aria-modal="true" aria-label="Settings" hidden>
     <div class="settings-modal">
-      <form action="/upload"></form>
+      <label for="background-image">Choose a background image</label>
+      <input type="file" id="background-image" name="image" accept="image/png, image/jpeg, image/gif">
+      <button onclick="setBackgroundImage()">Submit</button>
     </div>
   </div>
   <script src="script.js"></script>

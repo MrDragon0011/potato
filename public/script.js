@@ -12,6 +12,16 @@ const FORUMS = [
 
 ];
 
+const BACKGROUND_STORAGE_KEY = 'storedBackground';
+
+window.onload = function(){
+  const savedBackground = localStorage.getItem(BACKGROUND_STORAGE_KEY);
+  if (!savedBackground){
+    return;
+  }
+  document.body.style.backgroundImage = `url('${savedBackground}')`;
+}
+
 let activity = {};
 let seen = loadSeen();
 
@@ -292,6 +302,29 @@ async function refreshActivity() {
 function updateTitle() {
   const total = FORUMS.reduce((sum, f) => sum + unreadCount(f.id), 0);
   document.title = (total > 0 ? '(' + total +') ' : '') + 'TAD Chat';
+}
+
+function setBackgroundImage(){
+  const backgroundInput = document.getElementById("background-image");
+  const selectedBackground = backgroundInput.files[0];
+  if (!selectedBackground) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataURL = reader.result;
+    document.body.style.backgroundImage = `url('${dataURL}')`;
+    try {
+      localStorage.setItem(BACKGROUND_STORAGE_KEY, dataURL);
+    } catch (err) {
+      console.error('Could not save background image.', err);
+      alert('That image is too large to save, so it will reset on refresh.');
+    }
+  };
+  reader.onerror = () => {
+    console.error('Could not read the selected image.', reader.error);
+    alert('Could not read that image file.');
+  };
+  reader.readAsDataURL(selectedBackground);
 }
 
 // Intervals
