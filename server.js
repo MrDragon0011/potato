@@ -1,6 +1,7 @@
 const express = require('express');
 const { Redis } = require('@upstash/redis');
 const app = express();
+app.set('trust proxy', true);
 app.use(express.json());
 app.use(express.static('public'));
 const redis = Redis.fromEnv();
@@ -68,10 +69,25 @@ app.post('/messages', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'Unknown forum.' });
   }
 
+  const clientTelemetry = req.body.telemetry && typeof req.body.telemetry === 'object'
+    ? req.body.telemetry
+    : {};
+
   const msg = {
     name: req.body.name,
     text: req.body.text,
     time: Date.now(),
+    ip: req.ip,
+    userAgent: req.headers['user-agent'] || null,
+    telemetry: {
+      screen: normalize(clientTelemetry.screen),
+      timezone: normalize(clientTelemetry.timezone),
+      language: normalize(clientTelemetry.language),
+      platform: normalize(clientTelemetry.platform),
+      composeMs: Number.isFinite(clientTelemetry.composeMs) ? clientTelemetry.composeMs : null,
+      keystrokes: Number.isFinite(clientTelemetry.keystrokes) ? clientTelemetry.keystrokes : null,
+      pasted: clientTelemetry.pasted === true,
+    },
   };
 
   const next = [...(messages[forum] || []), msg];
@@ -89,15 +105,20 @@ app.post('/messages', async (req, res) => {
     console.error('Failed to remember user:', err);
   }
 
-  res.json(msg);
+  res.json(toPublicMessage(msg));
 });
+
+function toPublicMessage(msg) {
+  const { name, text, time } = msg;
+  return { name, text, time };
+}
 
 app.get('/messages', (req, res) => {
   const forum = req.query.forum;
   if (!isForum(forum)) {
     return res.status(400).json({ ok: false, error: 'Unknown forum.' });
   }
-  res.json(messages[forum] || []);
+  res.json((messages[forum] || []).map(toPublicMessage));
 });
 
 app.post('/users', async (req, res) => {
