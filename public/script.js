@@ -45,6 +45,7 @@ const fromHash = location.hash.replace('#', '');
 let currentForum = forumByID(fromHash) ? fromHash : FORUMS[0].id;
 
 const ADMIN_NAME = 'lawrence';
+const CONTRIBUTOR_NAMES = ["Nate"];
 function isContributor(name) {
   return CONTRIBUTOR_NAMES.includes(name);
 }
