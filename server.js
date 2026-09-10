@@ -1,7 +1,8 @@
 const express = require('express');
 const { Redis } = require('@upstash/redis');
 const app = express();
-app.use(express.json());
+app.set('trust proxy', true);
+app.use(express.json({ limit: '20kb' }));
 app.use(express.static('public'));
 const redis = Redis.fromEnv();
 const USERS_KEY = 'users';
@@ -12,6 +13,7 @@ let messages = {};
 let users = [];
 
 const normalize = (value) => (typeof value === 'string' ? value.trim() : '');
+const truncate = (value, maxLength) => normalize(value).slice(0, maxLength);
 
 
 async function loadState() {
@@ -68,10 +70,35 @@ app.post('/messages', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'Unknown forum.' });
   }
 
+  if (typeof req.body.text !== 'string' || req.body.text.length > 2000) {
+    return res.status(400).json({ ok: false, error: 'Message is too long.' });
+  }
+  if (typeof req.body.name !== 'string' || req.body.name.length > 100) {
+    return res.status(400).json({ ok: false, error: 'Name is too long.' });
+  }
+
+  const clientTelemetry = req.body.telemetry && typeof req.body.telemetry === 'object'
+    ? req.body.telemetry
+    : {};
+
+  const composeMs = Number.isFinite(clientTelemetry.composeMs)
+    ? Math.min(Math.max(clientTelemetry.composeMs, 0), 24 * 60 * 60 * 1000)
+    : null;
+
   const msg = {
     name: req.body.name,
     text: req.body.text,
     time: Date.now(),
+    ip: truncate(req.ip, 100),
+    userAgent: truncate(req.headers['user-agent'], 300) || null,
+    telemetry: {
+      screen: truncate(clientTelemetry.screen, 50),
+      timezone: truncate(clientTelemetry.timezone, 100),
+      language: truncate(clientTelemetry.language, 50),
+      platform: truncate(clientTelemetry.platform, 100),
+      composeMs,
+      pasted: clientTelemetry.pasted === true,
+    },
   };
 
   const next = [...(messages[forum] || []), msg];
@@ -89,15 +116,20 @@ app.post('/messages', async (req, res) => {
     console.error('Failed to remember user:', err);
   }
 
-  res.json(msg);
+  res.json(toPublicMessage(msg));
 });
+
+function toPublicMessage(msg) {
+  const { name, text, time } = msg;
+  return { name, text, time };
+}
 
 app.get('/messages', (req, res) => {
   const forum = req.query.forum;
   if (!isForum(forum)) {
     return res.status(400).json({ ok: false, error: 'Unknown forum.' });
   }
-  res.json(messages[forum] || []);
+  res.json((messages[forum] || []).map(toPublicMessage));
 });
 
 app.post('/users', async (req, res) => {
