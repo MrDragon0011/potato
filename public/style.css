@@ -107,7 +107,8 @@
   margin: 5px;
 }
 
-.crown{
+.crown,
+.contributor{
   display: inline-flex;
   align-items: center;
   margin-right: 4px;

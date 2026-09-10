@@ -45,19 +45,41 @@ const fromHash = location.hash.replace('#', '');
 let currentForum = forumByID(fromHash) ? fromHash : FORUMS[0].id;
 
 const ADMIN_NAME = 'lawrence';
+function isContributor(name) {
+  return CONTRIBUTOR_NAMES.includes(name);
+}
+
+function makeRoleIcon(className, label, svg) {
+  const span = document.createElement('span');
+  span.className = className;
+  span.title = label;
+  span.setAttribute('role', 'img');
+  span.setAttribute('aria-label', label);
+  span.innerHTML = svg;
+  return span;
+}
 
 function makeCrownIcon() {
-  const span = document.createElement('span');
-  span.className = 'crown';
-  span.title = ADMIN_NAME;
-  span.setAttribute('role', 'img');
-  span.setAttribute('aria-label', 'crown');
-  span.innerHTML =
-    '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" title="Owner">' +
+  return makeRoleIcon(
+    'crown',
+    'owner',
+    '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true">' +
     '<path fill="#F5C518" stroke="#B8860B" stroke-width="1" stroke-linejoin="round" ' +
     'd="M2 8l4.5 3L12 4l5.5 7L22 8l-2 11H4L2 8z"/>' +
-    '</svg>';
-  return span;
+    '</svg>'
+  );
+}
+
+function makeContributorIcon() {
+  return makeRoleIcon(
+    'contributor',
+    'contributor',
+    '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" ' +
+    'stroke="#2F81F7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<polyline points="16 18 22 12 16 6"/>' +
+    '<polyline points="8 6 2 12 8 18"/>' +
+    '</svg>'
+  );
 }
 
 function randomAnonName() {
@@ -124,6 +146,8 @@ async function loadMessages() {
     code.textContent = ` ${new Date(m.time).toLocaleTimeString()}`;
     if (m.name === ADMIN_NAME) {
       divtext.appendChild(makeCrownIcon());
+    } else if (isContributor(m.name)) {
+      divtext.appendChild(makeContributorIcon());
     }
     divtext.appendChild(document.createTextNode(`${m.name}: ${m.text}`));
     div.appendChild(divtext)
