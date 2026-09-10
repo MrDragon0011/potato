@@ -120,6 +120,55 @@ input.addEventListener('keydown', (event) => {
   }
 })
 
+let composeStartedAt = null;
+let composePasted = false;
+let composeTabSwitches = 0;
+let sessionMessageCount = 0;
+
+input.addEventListener('input', () => {
+  if (composeStartedAt === null) composeStartedAt = Date.now();
+});
+input.addEventListener('paste', () => {
+  composePasted = true;
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && composeStartedAt !== null) {
+    composeTabSwitches += 1;
+  }
+});
+
+function resetComposeTracking() {
+  composeStartedAt = null;
+  composePasted = false;
+  composeTabSwitches = 0;
+}
+
+const UNKNOWN_TELEMETRY = 'Could not find value';
+
+function collectTelemetry() {
+  let timezone = UNKNOWN_TELEMETRY;
+  try {
+    timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || UNKNOWN_TELEMETRY;
+  } catch {
+    timezone = UNKNOWN_TELEMETRY;
+  }
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  return {
+    screen: `${screen.width}x${screen.height}`,
+    timezone,
+    language: navigator.language || UNKNOWN_TELEMETRY,
+    platform: navigator.platform || UNKNOWN_TELEMETRY,
+    composeMs: composeStartedAt ? Date.now() - composeStartedAt : 0,
+    pasted: composePasted,
+    tabSwitches: composeTabSwitches,
+    deviceMemory: navigator.deviceMemory || UNKNOWN_TELEMETRY,
+    cpuCores: navigator.hardwareConcurrency || UNKNOWN_TELEMETRY,
+    connectionType: connection ? connection.effectiveType || UNKNOWN_TELEMETRY : UNKNOWN_TELEMETRY,
+    referrer: document.referrer || UNKNOWN_TELEMETRY,
+    sessionMessageCount,
+  };
+}
+
 async function sendMessage() {
   const input = document.getElementById('message-input')
   if (input.value.trim() === '') return;
@@ -127,12 +176,19 @@ async function sendMessage() {
   await fetch('/messages', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name: myName, text: input.value, forum: currentForum}),
+    body: JSON.stringify({
+      name: myName,
+      text: input.value,
+      forum: currentForum,
+      telemetry: collectTelemetry(),
+    }),
   });
+  sessionMessageCount += 1;
   input.value = '';
+  resetComposeTracking();
   loadMessages();
   refreshActivity();
-} 
+}
 
 async function loadMessages() {
   const res = await fetch('/messages?forum=' + currentForum);

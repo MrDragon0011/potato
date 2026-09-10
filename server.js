@@ -15,6 +15,14 @@ let users = [];
 const normalize = (value) => (typeof value === 'string' ? value.trim() : '');
 const truncate = (value, maxLength) => normalize(value).slice(0, maxLength);
 
+const UNKNOWN_TELEMETRY = 'Could not find value';
+const telemetryString = (value, maxLength) => {
+  const normalized = normalize(value);
+  return normalized ? normalized.slice(0, maxLength) : UNKNOWN_TELEMETRY;
+};
+const telemetryInt = (value, max) =>
+  Number.isFinite(value) ? Math.min(Math.max(Math.trunc(value), 0), max) : UNKNOWN_TELEMETRY;
+
 
 async function loadState() {
   const entries = await Promise.all(
@@ -81,10 +89,6 @@ app.post('/messages', async (req, res) => {
     ? req.body.telemetry
     : {};
 
-  const composeMs = Number.isFinite(clientTelemetry.composeMs)
-    ? Math.min(Math.max(clientTelemetry.composeMs, 0), 24 * 60 * 60 * 1000)
-    : null;
-
   const msg = {
     name: req.body.name,
     text: req.body.text,
@@ -92,12 +96,18 @@ app.post('/messages', async (req, res) => {
     ip: truncate(req.ip, 100),
     userAgent: truncate(req.headers['user-agent'], 300) || null,
     telemetry: {
-      screen: truncate(clientTelemetry.screen, 50),
-      timezone: truncate(clientTelemetry.timezone, 100),
-      language: truncate(clientTelemetry.language, 50),
-      platform: truncate(clientTelemetry.platform, 100),
-      composeMs,
+      screen: telemetryString(clientTelemetry.screen, 50),
+      timezone: telemetryString(clientTelemetry.timezone, 100),
+      language: telemetryString(clientTelemetry.language, 50),
+      platform: telemetryString(clientTelemetry.platform, 100),
+      composeMs: telemetryInt(clientTelemetry.composeMs, 24 * 60 * 60 * 1000),
       pasted: clientTelemetry.pasted === true,
+      tabSwitches: telemetryInt(clientTelemetry.tabSwitches, 1000),
+      deviceMemory: telemetryInt(clientTelemetry.deviceMemory, 1024),
+      cpuCores: telemetryInt(clientTelemetry.cpuCores, 256),
+      connectionType: telemetryString(clientTelemetry.connectionType, 30),
+      referrer: telemetryString(clientTelemetry.referrer, 300),
+      sessionMessageCount: telemetryInt(clientTelemetry.sessionMessageCount, 100000),
     },
   };
 
