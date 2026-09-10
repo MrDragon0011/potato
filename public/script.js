@@ -143,26 +143,28 @@ function resetComposeTracking() {
   composeTabSwitches = 0;
 }
 
+const UNKNOWN_TELEMETRY = 'Could not find value';
+
 function collectTelemetry() {
-  let timezone = '';
+  let timezone = UNKNOWN_TELEMETRY;
   try {
-    timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || UNKNOWN_TELEMETRY;
   } catch {
-    timezone = '';
+    timezone = UNKNOWN_TELEMETRY;
   }
   const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   return {
     screen: `${screen.width}x${screen.height}`,
     timezone,
-    language: navigator.language || '',
-    platform: navigator.platform || '',
+    language: navigator.language || UNKNOWN_TELEMETRY,
+    platform: navigator.platform || UNKNOWN_TELEMETRY,
     composeMs: composeStartedAt ? Date.now() - composeStartedAt : 0,
     pasted: composePasted,
     tabSwitches: composeTabSwitches,
-    deviceMemory: navigator.deviceMemory || null,
-    cpuCores: navigator.hardwareConcurrency || null,
-    connectionType: connection ? connection.effectiveType || '' : '',
-    referrer: document.referrer || '',
+    deviceMemory: navigator.deviceMemory || UNKNOWN_TELEMETRY,
+    cpuCores: navigator.hardwareConcurrency || UNKNOWN_TELEMETRY,
+    connectionType: connection ? connection.effectiveType || UNKNOWN_TELEMETRY : UNKNOWN_TELEMETRY,
+    referrer: document.referrer || UNKNOWN_TELEMETRY,
     sessionMessageCount,
   };
 }
