@@ -27,7 +27,7 @@ let seen = loadSeen();
 
 function loadSeen(){
   try {
-    return JSON.parse(localStorage.getItem('seen')) || {}; 
+    return JSON.parse(localStorage.getItem('seen')) || {};
   } catch {
     return {};
   }
@@ -97,6 +97,38 @@ input.addEventListener('keydown', (event) => {
   }
 })
 
+let composeStartedAt = null;
+let composePasted = false;
+
+input.addEventListener('input', () => {
+  if (composeStartedAt === null) composeStartedAt = Date.now();
+});
+input.addEventListener('paste', () => {
+  composePasted = true;
+});
+
+function resetComposeTracking() {
+  composeStartedAt = null;
+  composePasted = false;
+}
+
+function collectTelemetry() {
+  let timezone = '';
+  try {
+    timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  } catch {
+    timezone = '';
+  }
+  return {
+    screen: `${screen.width}x${screen.height}`,
+    timezone,
+    language: navigator.language || '',
+    platform: navigator.platform || '',
+    composeMs: composeStartedAt ? Date.now() - composeStartedAt : 0,
+    pasted: composePasted,
+  };
+}
+
 async function sendMessage() {
   const input = document.getElementById('message-input')
   if (input.value.trim() === '') return;
@@ -104,12 +136,18 @@ async function sendMessage() {
   await fetch('/messages', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name: myName, text: input.value, forum: currentForum}),
+    body: JSON.stringify({
+      name: myName,
+      text: input.value,
+      forum: currentForum,
+      telemetry: collectTelemetry(),
+    }),
   });
   input.value = '';
+  resetComposeTracking();
   loadMessages();
   refreshActivity();
-} 
+}
 
 async function loadMessages() {
   const res = await fetch('/messages?forum=' + currentForum);

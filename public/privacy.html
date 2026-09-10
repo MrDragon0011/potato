@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy &middot; TAD Chat</title>
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 20px 60px;
+      line-height: 1.6;
+      color: #1a1a1a;
+    }
+    h1{ margin-bottom: 4px; }
+    h2{ margin-top: 32px; font-size: 1.15rem; }
+    .updated{ color: #666; font-size: 0.9rem; margin-top: 0; }
+    .callout{
+      border: 1px solid #000;
+      border-radius: 8px;
+      padding: 12px 16px;
+      background: #f0f0f0;
+      margin: 24px 0;
+    }
+    table{ border-collapse: collapse; width: 100%; margin: 16px 0; }
+    th, td{ border: 1px solid #ccc; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th{ background: #f5f5f5; }
+    a{ color: #2d6bce; }
+    footer{ margin-top: 40px; font-size: 0.9rem; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>TAD Chat &mdash; Privacy Policy</h1>
+  <p class="updated">Last updated: September 9, 2026</p>
+
+  <p>
+    This Privacy Policy describes what TAD Chat ("the Service") collects and stores today,
+    and the rights the operator, Lawrence Tong ("the operator"), reserves going forward.
+    It should be read together with the <a href="/terms.html">Terms of Service</a>, which
+    is incorporated into this Policy by reference and governs your use of the Service,
+    including its limitation of liability, indemnification, and binding arbitration
+    provisions, all of which apply to any dispute about this Policy or the handling of
+    your data.
+  </p>
+
+  <div class="callout">
+    <strong>Short version:</strong> TAD Chat stores the username you pick and the
+    messages you post, in a shared database, so the chat works, plus a few things in
+    your own browser. It also logs the IP address, some basic device/network telemetry
+    (browser, screen size, time zone, language, platform), and some basic behavioral
+    telemetry (compose time, whether text was pasted) each message is
+    sent with, none of which is ever shown to other users, but which may be used to
+    help look into a suspected academic honesty violation. As described below, the
+    operator does not currently sell your
+    data, but reserves broad discretion over how data described in this Policy is used,
+    retained, and disclosed, and may change this Policy at any time. Read the full
+    Policy, not just this summary.
+  </div>
+
+  <h2>1. What is collected and where it's stored</h2>
+  <table>
+    <tr><th>Data</th><th>Where</th><th>Purpose</th></tr>
+    <tr>
+      <td>Username you choose</td>
+      <td>Server (Upstash Redis)</td>
+      <td>Identifies your posts to other users; not verified against any real identity.</td>
+    </tr>
+    <tr>
+      <td>Messages you post (text + timestamp + your username)</td>
+      <td>Server (Upstash Redis)</td>
+      <td>Displayed in the forum you posted to.</td>
+    </tr>
+    <tr>
+      <td>The IP address your device sends the message from</td>
+      <td>Server (Upstash Redis), attached to the message record</td>
+      <td>Not shown to other users or displayed anywhere in the app. Kept so the
+        operator can help establish where a message came from &mdash; for example, if a
+        suspected academic honesty violation needs to be looked into and location or
+        device information would help confirm or rule out who was involved.</td>
+    </tr>
+    <tr>
+      <td>Device and network telemetry: browser/OS identifier (user agent), screen
+        resolution, time zone, browser language, and device platform</td>
+      <td>Server (Upstash Redis), attached to the message record</td>
+      <td>Not shown to other users or displayed anywhere in the app. Kept for the same
+        reason as the IP address above &mdash; to help distinguish or match up devices
+        if a suspected academic honesty violation needs to be looked into.</td>
+    </tr>
+    <tr>
+      <td>Behavioral/interaction telemetry: how long you spent composing a message
+        before sending it, and whether the text was pasted in rather than typed</td>
+      <td>Server (Upstash Redis), attached to the message record</td>
+      <td>Not shown to other users or displayed anywhere in the app. Kept so the
+        operator can distinguish a message that was actually typed out from one that
+        was pasted in wholesale (for example, a copied answer) if a suspected academic
+        honesty violation needs to be looked into.</td>
+    </tr>
+    <tr>
+      <td>Your chosen handle (a copy)</td>
+      <td>Your browser (localStorage)</td>
+      <td>So the site remembers your username between visits.</td>
+    </tr>
+    <tr>
+      <td>Which messages you've seen, per forum</td>
+      <td>Your browser (localStorage)</td>
+      <td>Powers the unread-message indicator.</td>
+    </tr>
+    <tr>
+      <td>A background image, if you set one</td>
+      <td>Your browser (localStorage)</td>
+      <td>Personalizes your own view; not sent to the server or seen by anyone else.</td>
+    </tr>
+  </table>
+  <p>
+    Aside from the IP address and device/network telemetry described above, TAD Chat
+    does not currently use cookies, run analytics or tracking scripts, or collect email
+    or any identity information beyond the username you type in. The operator reserves
+    the right to add any of the above in a future version of the Service, in which case
+    this Policy will be updated as described in Section 8.
+  </p>
+  <p>
+    Standard web server and hosting infrastructure logs (such as those generated
+    automatically by Render, Vercel, and Upstash in the course of operating the Service)
+    may exist outside the application's own database and are governed by those
+    providers' own practices, not by this Policy.
+  </p>
+
+  <h2>2. No verified identity</h2>
+  <p>
+    Usernames are first-come, first-served and are not tied to your real name, school
+    login, or email in any way the Service enforces. Anyone can type any username that
+    is not already taken. Do not assume a username belongs to who it claims to.
+  </p>
+
+  <h2>3. How long data is kept, and the operator's retention discretion</h2>
+  <p>
+    Messages and usernames are kept indefinitely by default &mdash; there is currently
+    no automatic expiration or scheduled deletion. One reason for this: as described in
+    the <a href="/terms.html">Terms of Service</a>, TAD Chat exists for discussing how to
+    approach schoolwork, not for exchanging completed answers, and keeping a durable
+    record of what was actually said helps deter and, if needed, look into suspected
+    academic dishonesty &mdash; including after the fact, and even if a user later asks
+    for a message to be removed. The operator otherwise reserves the right to retain,
+    archive, or delete any data described in this Policy, in whole or in part, at any
+    time, for any reason or no reason, at the operator's sole discretion, including data
+    covered by a request under Section 5. The operator makes no commitment as to how
+    long any deletion request will take to process, or that any data will in fact be
+    deleted rather than merely hidden from display, retained in backups, or retained
+    where the operator determines retention is warranted (for example, for academic
+    honesty review, moderation records, legal compliance, or dispute resolution).
+  </p>
+
+  <h2>4. Who can see it, and disclosure</h2>
+  <p>
+    Messages posted to a forum are visible to anyone using the Service. The underlying
+    database is accessible to the Service's operator and to any person or service the
+    operator engages to help operate, host, maintain, or improve the Service (for
+    example, its hosting and database providers). The operator does not currently sell
+    data collected through the Service to third parties, but reserves the right to
+    disclose any data described in this Policy where the operator determines, in its
+    sole discretion, that disclosure is appropriate &mdash; including to the school (for
+    example, in connection with a suspected academic honesty violation, honor council
+    proceeding, or teacher inquiry), to law enforcement, to comply with a legal
+    obligation, to protect the rights, safety, or property of the operator or any
+    person, to investigate suspected violations of the
+    <a href="/terms.html">Terms of Service</a>, or in connection with a transfer, sale,
+    or restructuring of the Service or its underlying project.
+  </p>
+
+  <h2>5. Requesting removal of your data</h2>
+  <p>
+    You may request that your username or messages be removed by contacting Lawrence
+    Tong through the <a href="https://github.com/btfcookies/potato">project's GitHub
+    page</a>. There is no self-serve "delete my data" button, no required response time,
+    and no guarantee a request will be granted. A request is considered, not honored,
+    and the operator may decline it in full or in part for any reason, including any
+    reason described in Section 3 (for example, academic honesty review). Submitting a
+    request does not obligate the operator to act on it, confirm receipt of it, or
+    respond to it at all.
+  </p>
+
+  <h2>6. No security guarantee</h2>
+  <p>
+    The operator takes reasonable steps to protect data in the Service's database, but
+    no method of storage or transmission is completely secure. You provide your
+    username and messages at your own risk, and the operator disclaims, to the fullest
+    extent permitted by law, any liability for unauthorized access to, or disclosure,
+    alteration, or loss of, data handled by the Service. See the disclaimer of
+    warranties, limitation of liability, and indemnification provisions in the
+    <a href="/terms.html">Terms of Service</a>, which apply fully to this Policy.
+  </p>
+
+  <h2>7. Students and school context</h2>
+  <p>
+    TAD Chat is built for students of St. Mark's School of Texas and is not designed
+    for use outside that community. It does not ask your age and does not have
+    different handling for younger users beyond what's described on this page &mdash;
+    do not post information about yourself or anyone else, including other students,
+    that you wouldn't want stored indefinitely, at the operator's discretion, in a
+    shared, unmoderated database. See also the eligibility, academic-honesty, and
+    conduct rules in the <a href="/terms.html">Terms of Service</a>.
+  </p>
+
+  <h2>8. Changes to this policy</h2>
+  <p>
+    This Policy may be updated at any time, for any reason, at the operator's sole
+    discretion, with or without advance notice, and any change is effective immediately
+    upon posting unless stated otherwise. The "Last updated" date above reflects the
+    most recent change. Continued use of the Service after a change is posted means you
+    accept the updated Policy; it is your responsibility to check this page
+    periodically.
+  </p>
+
+  <h2>9. Contact</h2>
+  <p>
+    Questions about this Policy, or requests under Section 5, can be raised with
+    Lawrence Tong through the
+    <a href="https://github.com/btfcookies/potato">project's GitHub page</a>. Contacting
+    the operator does not create any obligation to respond within any particular time or
+    at all.
+  </p>
+
+  <footer>
+    <p><a href="/">&larr; Back to TAD Chat</a> &middot; <a href="/terms.html">Terms of Service</a></p>
+  </footer>
+</body>
+</html>
