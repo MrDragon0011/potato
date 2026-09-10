@@ -156,7 +156,6 @@ async function loadMessages() {
     chatBox.appendChild(div);
 
   });
-  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 async function updateUsername(){
