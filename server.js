@@ -84,6 +84,8 @@ app.post('/messages', async (req, res) => {
   const composeMs = Number.isFinite(clientTelemetry.composeMs)
     ? Math.min(Math.max(clientTelemetry.composeMs, 0), 24 * 60 * 60 * 1000)
     : null;
+  const boundedInt = (value, max) =>
+    Number.isFinite(value) ? Math.min(Math.max(Math.trunc(value), 0), max) : null;
 
   const msg = {
     name: req.body.name,
@@ -98,6 +100,12 @@ app.post('/messages', async (req, res) => {
       platform: truncate(clientTelemetry.platform, 100),
       composeMs,
       pasted: clientTelemetry.pasted === true,
+      tabSwitches: boundedInt(clientTelemetry.tabSwitches, 1000),
+      deviceMemory: boundedInt(clientTelemetry.deviceMemory, 1024),
+      cpuCores: boundedInt(clientTelemetry.cpuCores, 256),
+      connectionType: truncate(clientTelemetry.connectionType, 20),
+      referrer: truncate(clientTelemetry.referrer, 300),
+      sessionMessageCount: boundedInt(clientTelemetry.sessionMessageCount, 100000),
     },
   };
 
