@@ -44,8 +44,8 @@ function unreadCount(id) {
 const fromHash = location.hash.replace('#', '');
 let currentForum = forumByID(fromHash) ? fromHash : FORUMS[0].id;
 
-const ADMIN_NAME = 'lawrence';
-const CONTRIBUTOR_NAMES = ["nathan daniel"];
+const ADMIN_NAME = null;
+const CONTRIBUTOR_NAMES = ["nathan daniel", "lawrence", "lawrence-alt"];
 function isContributor(name) {
   return CONTRIBUTOR_NAMES.includes(name);
 }
@@ -190,11 +190,14 @@ async function sendMessage() {
   refreshActivity();
 }
 
-async function loadMessages() {
+async function loadMessages({ forceScroll = false } = {}) {
   const res = await fetch('/messages?forum=' + currentForum);
   if (!res.ok) return;
   const messages = await res.json();
   const chatBox = document.getElementById('chat-box');
+
+  const atBottom = forceScroll || chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight < 50;
+
   chatBox.innerHTML = ''
   messages.forEach((m) => {
     const div = document.createElement('div');
@@ -212,6 +215,10 @@ async function loadMessages() {
     chatBox.appendChild(div);
 
   });
+
+  if (atBottom) {
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
 }
 
 async function updateUsername(){
@@ -359,7 +366,7 @@ function switchForum(id){
   loadForumList();
   const blurb = document.getElementById('forum-blurb');
   if (blurb) blurb.textContent = forumByID(id).blurb;
-  loadMessages();
+  loadMessages({ forceScroll: true });
   refreshActivity();
 }
 
