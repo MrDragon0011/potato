@@ -6,6 +6,8 @@ app.use(express.json({ limit: '20kb' }));
 app.use(express.static('public'));
 const redis = Redis.fromEnv();
 const USERS_KEY = 'users';
+const BANNED_IPS_KEY = 'banned_ips';
+let bannedIps = [];
 const forum_ids = ['general-discussion','math-on-level', 'math-honors', 'science-lane',  'science-carron', 'humanities-alipour', 'humanities-fox', 'humanities-balan', 'humanities-rutherford'];
 const isForum = (id) => forum_ids.includes(id);
 const messagesKey = (forum) => 'messages:' + forum;
@@ -35,6 +37,42 @@ async function loadState() {
 
   const storedUsers = await redis.get(USERS_KEY);
   users = Array.isArray(storedUsers) ? storedUsers : [];
+
+  const storedBans = await redis.get(BANNED_IPS_KEY);
+  bannedIps = Array.isArray(storedBans) ? storedBans : [];
+}
+
+function isAdmin(req) {
+  const token = req.headers['x-admin-token'];
+  return typeof token === 'string' && token.length > 0 && process.env.ADMIN_TOKEN && token === process.env.ADMIN_TOKEN;
+}
+
+const adminAttempts = new Map();
+const ADMIN_MAX_ATTEMPTS = 10;
+const ADMIN_WINDOW_MS = 5 * 60 * 1000;
+
+function requireAdmin(req, res, next) {
+  const key = truncate(req.ip, 100);
+  const now = Date.now();
+  const entry = adminAttempts.get(key);
+
+  if (entry && now - entry.windowStart > ADMIN_WINDOW_MS) {
+    adminAttempts.delete(key);
+  }
+
+  const current = adminAttempts.get(key);
+  if (current && current.count >= ADMIN_MAX_ATTEMPTS) {
+    return res.status(429).json({ ok: false, error: 'Too many attempts. Try again later.' });
+  }
+
+  if (!isAdmin(req)) {
+    const updated = current ? { windowStart: current.windowStart, count: current.count + 1 } : { windowStart: now, count: 1 };
+    adminAttempts.set(key, updated);
+    return res.status(403).json({ ok: false, error: 'Forbidden.' });
+  }
+
+  adminAttempts.delete(key);
+  next();
 }
 
 async function rememberUser(name) {
@@ -73,6 +111,10 @@ app.get('/ping', (req, res) => {
 });
 
 app.post('/messages', async (req, res) => {
+  if (bannedIps.includes(truncate(req.ip, 100))) {
+    return res.status(403).json({ ok: false, error: 'Forbidden.' });
+  }
+
   const forum = req.body.forum;
   if (!isForum(forum)) {
     return res.status(400).json({ ok: false, error: 'Unknown forum.' });
@@ -167,6 +209,31 @@ app.get('/activity', (req, res) =>{
   res.json(counts);
 })
 
+
+app.post('/admin/ban', requireAdmin, async (req, res) => {
+  const ip = truncate(req.body.ip, 100);
+  if (!ip) {
+    return res.status(400).json({ ok: false, error: 'ip is required.' });
+  }
+  if (!bannedIps.includes(ip)) {
+    const next = [...bannedIps, ip];
+    await redis.set(BANNED_IPS_KEY, next);
+    bannedIps = next;
+  }
+  res.json({ ok: true, bannedIps });
+});
+
+app.post('/admin/unban', requireAdmin, async (req, res) => {
+  const ip = truncate(req.body.ip, 100);
+  const next = bannedIps.filter((banned) => banned !== ip);
+  await redis.set(BANNED_IPS_KEY, next);
+  bannedIps = next;
+  res.json({ ok: true, bannedIps });
+});
+
+app.get('/admin/banned', requireAdmin, (req, res) => {
+  res.json({ ok: true, bannedIps });
+});
 
 const PORT = process.env.PORT || 3000;
 
