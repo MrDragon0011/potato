@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const { Redis } = require('@upstash/redis');
 const app = express();
 app.set('trust proxy', true);
@@ -6,6 +7,8 @@ app.use(express.json({ limit: '20kb' }));
 app.use(express.static('public'));
 const redis = Redis.fromEnv();
 const USERS_KEY = 'users';
+const BANNED_IPS_KEY = 'banned_ips';
+let bannedIps = [];
 const forum_ids = ['general-discussion','math-on-level', 'math-honors', 'science-lane',  'science-carron', 'humanities-alipour', 'humanities-fox', 'humanities-balan', 'humanities-rutherford'];
 const isForum = (id) => forum_ids.includes(id);
 const messagesKey = (forum) => 'messages:' + forum;
@@ -35,6 +38,91 @@ async function loadState() {
 
   const storedUsers = await redis.get(USERS_KEY);
   users = Array.isArray(storedUsers) ? storedUsers : [];
+
+  const storedBans = await redis.get(BANNED_IPS_KEY);
+  bannedIps = Array.isArray(storedBans) ? storedBans : [];
+}
+
+const ADMIN_SESSION_COOKIE = 'admin_session';
+const ADMIN_SESSION_TTL_MS = 2 * 60 * 60 * 1000;
+const adminSessions = new Map();
+
+function parseCookies(req) {
+  const header = req.headers.cookie;
+  const cookies = {};
+  if (!header) return cookies;
+  for (const part of header.split(';')) {
+    const idx = part.indexOf('=');
+    if (idx === -1) continue;
+    const key = part.slice(0, idx).trim();
+    const value = part.slice(idx + 1).trim();
+    if (key) cookies[key] = decodeURIComponent(value);
+  }
+  return cookies;
+}
+
+function setAdminSessionCookie(req, res, sessionId) {
+  const parts = [
+    `${ADMIN_SESSION_COOKIE}=${sessionId}`,
+    'HttpOnly',
+    'Path=/',
+    'SameSite=Strict',
+    `Max-Age=${Math.floor(ADMIN_SESSION_TTL_MS / 1000)}`,
+  ];
+  if (req.secure) parts.push('Secure');
+  res.setHeader('Set-Cookie', parts.join('; '));
+}
+
+function clearAdminSessionCookie(req, res) {
+  const parts = [`${ADMIN_SESSION_COOKIE}=`, 'HttpOnly', 'Path=/', 'SameSite=Strict', 'Max-Age=0'];
+  if (req.secure) parts.push('Secure');
+  res.setHeader('Set-Cookie', parts.join('; '));
+}
+
+function isAdmin(req) {
+  const sessionId = parseCookies(req)[ADMIN_SESSION_COOKIE];
+  if (!sessionId) return false;
+  const session = adminSessions.get(sessionId);
+  if (!session) return false;
+  if (Date.now() - session.createdAt > ADMIN_SESSION_TTL_MS) {
+    adminSessions.delete(sessionId);
+    return false;
+  }
+  return true;
+}
+
+const adminAttempts = new Map();
+const ADMIN_MAX_ATTEMPTS = 10;
+const ADMIN_WINDOW_MS = 5 * 60 * 1000;
+
+function rateLimited(req) {
+  const key = truncate(req.ip, 100);
+  const now = Date.now();
+  const entry = adminAttempts.get(key);
+
+  if (entry && now - entry.windowStart > ADMIN_WINDOW_MS) {
+    adminAttempts.delete(key);
+  }
+
+  const current = adminAttempts.get(key);
+  if (current && current.count >= ADMIN_MAX_ATTEMPTS) {
+    return true;
+  }
+
+  const updated = current ? { windowStart: current.windowStart, count: current.count + 1 } : { windowStart: now, count: 1 };
+  adminAttempts.set(key, updated);
+  return false;
+}
+
+function clearRateLimit(req) {
+  adminAttempts.delete(truncate(req.ip, 100));
+}
+
+function requireAdmin(req, res, next) {
+  if (!isAdmin(req)) {
+    return res.status(403).json({ ok: false, error: 'Forbidden.' });
+  }
+  next();
 }
 
 async function rememberUser(name) {
@@ -73,6 +161,10 @@ app.get('/ping', (req, res) => {
 });
 
 app.post('/messages', async (req, res) => {
+  if (bannedIps.includes(truncate(req.ip, 100))) {
+    return res.status(403).json({ ok: false, error: 'Forbidden.' });
+  }
+
   const forum = req.body.forum;
   if (!isForum(forum)) {
     return res.status(400).json({ ok: false, error: 'Unknown forum.' });
@@ -167,6 +259,56 @@ app.get('/activity', (req, res) =>{
   res.json(counts);
 })
 
+
+app.post('/admin/login', (req, res) => {
+  if (rateLimited(req)) {
+    return res.status(429).json({ ok: false, error: 'Too many attempts. Try again later.' });
+  }
+
+  const token = req.body.token;
+  const expected = process.env.ADMIN_TOKEN;
+  if (typeof token !== 'string' || !token || !expected || token !== expected) {
+    return res.status(403).json({ ok: false, error: 'Forbidden.' });
+  }
+
+  clearRateLimit(req);
+  const sessionId = crypto.randomBytes(32).toString('hex');
+  adminSessions.set(sessionId, { createdAt: Date.now() });
+  setAdminSessionCookie(req, res, sessionId);
+  res.json({ ok: true });
+});
+
+app.post('/admin/logout', (req, res) => {
+  const sessionId = parseCookies(req)[ADMIN_SESSION_COOKIE];
+  if (sessionId) adminSessions.delete(sessionId);
+  clearAdminSessionCookie(req, res);
+  res.json({ ok: true });
+});
+
+app.post('/admin/ban', requireAdmin, async (req, res) => {
+  const ip = truncate(req.body.ip, 100);
+  if (!ip) {
+    return res.status(400).json({ ok: false, error: 'ip is required.' });
+  }
+  if (!bannedIps.includes(ip)) {
+    const next = [...bannedIps, ip];
+    await redis.set(BANNED_IPS_KEY, next);
+    bannedIps = next;
+  }
+  res.json({ ok: true, bannedIps });
+});
+
+app.post('/admin/unban', requireAdmin, async (req, res) => {
+  const ip = truncate(req.body.ip, 100);
+  const next = bannedIps.filter((banned) => banned !== ip);
+  await redis.set(BANNED_IPS_KEY, next);
+  bannedIps = next;
+  res.json({ ok: true, bannedIps });
+});
+
+app.get('/admin/banned', requireAdmin, (req, res) => {
+  res.json({ ok: true, bannedIps });
+});
 
 const PORT = process.env.PORT || 3000;
 
