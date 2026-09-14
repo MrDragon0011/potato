@@ -48,6 +48,10 @@
   </div>
   <div id="settings-overlay" class="settings-overlay" role="dialog" aria-modal="true" aria-label="Settings" hidden>
     <div class="settings-modal">
+      <div class="theme-setting">
+        <span id="theme-label">Theme</span>
+        <button type="button" id="theme-toggle" class="theme-toggle" aria-labelledby="theme-label" aria-pressed="false" onclick="toggleTheme()">Dark mode</button>
+      </div>
       <label for="background-image">Choose a background image</label>
       <input type="file" id="background-image" name="image" accept="image/png, image/jpeg, image/gif">
       <button onclick="setBackgroundImage()">Submit</button>

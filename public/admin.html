@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin &middot; TAD Chat</title>
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 0 20px 60px;
+      line-height: 1.5;
+      color: #1a1a1a;
+    }
+    h1{ margin-bottom: 4px; }
+    h2{ margin-top: 32px; font-size: 1.1rem; }
+    input[type="text"], input[type="password"]{
+      padding: 8px;
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 6px 0;
+    }
+    button{
+      padding: 8px 14px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .row{ display: flex; gap: 8px; align-items: center; }
+    .row input{ flex: 1; }
+    ul{ padding-left: 20px; }
+    .msg{ margin-top: 10px; font-size: 0.9rem; }
+    .msg.error{ color: #b00020; }
+    .msg.ok{ color: #146c2e; }
+    #panel{ display: none; }
+  </style>
+</head>
+<body>
+  <h1>TAD Chat &middot; Admin</h1>
+
+  <div id="login">
+    <p>Enter the admin token to continue.</p>
+    <input type="password" id="token-input" placeholder="Admin token" autocomplete="off">
+    <button id="login-btn">Continue</button>
+    <p class="msg error" id="login-msg"></p>
+  </div>
+
+  <div id="panel">
+    <h2>Ban an IP</h2>
+    <div class="row">
+      <input type="text" id="ban-input" placeholder="IP address">
+      <button id="ban-btn">Ban</button>
+    </div>
+
+    <h2>Currently banned IPs</h2>
+    <button id="refresh-btn">Refresh list</button>
+    <ul id="banned-list"></ul>
+
+    <p class="msg" id="panel-msg"></p>
+    <p><button id="logout-btn">Log out</button></p>
+  </div>
+
+  <script src="/admin.js"></script>
+</body>
+</html>
