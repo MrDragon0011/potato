@@ -13,6 +13,25 @@ const FORUMS = [
 ];
 
 const BACKGROUND_STORAGE_KEY = 'storedBackground';
+const THEME_STORAGE_KEY = 'tadChatTheme';
+
+function applyTheme(theme) {
+  const isDark = theme === 'dark';
+  document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+  const toggle = document.getElementById('theme-toggle');
+  if (toggle) {
+    toggle.textContent = isDark ? 'Light mode' : 'Dark mode';
+    toggle.setAttribute('aria-pressed', String(isDark));
+  }
+}
+
+function toggleTheme() {
+  const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+  applyTheme(nextTheme);
+}
+
+applyTheme(localStorage.getItem(THEME_STORAGE_KEY) || 'light');
 
 window.onload = function(){
   const savedBackground = localStorage.getItem(BACKGROUND_STORAGE_KEY);
