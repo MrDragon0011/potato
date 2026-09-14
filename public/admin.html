@@ -69,8 +69,6 @@
     const panelMsg = document.getElementById('panel-msg');
     const bannedList = document.getElementById('banned-list');
 
-    let adminToken = sessionStorage.getItem('adminToken') || '';
-
     function setPanelMsg(text, isError) {
       panelMsg.textContent = text || '';
       panelMsg.className = 'msg ' + (isError ? 'error' : 'ok');
@@ -79,15 +77,10 @@
     async function adminFetch(path, options = {}) {
       const res = await fetch(path, {
         ...options,
-        headers: {
-          ...(options.headers || {}),
-          'x-admin-token': adminToken,
-        },
+        credentials: 'same-origin',
       });
       if (res.status === 403) {
-        adminToken = '';
-        sessionStorage.removeItem('adminToken');
-        showLogin('Token rejected. Please re-enter it.');
+        showLogin('Session expired. Please re-enter the token.');
         throw new Error('Forbidden');
       }
       return res;
@@ -168,15 +161,17 @@
     document.getElementById('login-btn').addEventListener('click', async () => {
       const value = document.getElementById('token-input').value.trim();
       if (!value) return;
-      adminToken = value;
       try {
-        const res = await fetch('/admin/banned', { headers: { 'x-admin-token': adminToken } });
-        if (res.status === 403) {
-          adminToken = '';
-          loginMsg.textContent = 'Incorrect token.';
+        const res = await fetch('/admin/login', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: value }),
+        });
+        if (!res.ok) {
+          loginMsg.textContent = res.status === 429 ? 'Too many attempts. Try again later.' : 'Incorrect token.';
           return;
         }
-        sessionStorage.setItem('adminToken', adminToken);
         document.getElementById('token-input').value = '';
         showPanel();
       } catch (err) {
@@ -190,17 +185,27 @@
 
     document.getElementById('refresh-btn').addEventListener('click', loadBanned);
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      adminToken = '';
-      sessionStorage.removeItem('adminToken');
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      try {
+        await fetch('/admin/logout', { method: 'POST', credentials: 'same-origin' });
+      } catch (err) {
+        // ignore network errors on logout, still show the login screen
+      }
       showLogin('');
     });
 
-    if (adminToken) {
-      showPanel();
-    } else {
-      showLogin('');
-    }
+    (async () => {
+      try {
+        const res = await fetch('/admin/banned', { credentials: 'same-origin' });
+        if (res.ok) {
+          showPanel();
+        } else {
+          showLogin('');
+        }
+      } catch (err) {
+        showLogin('');
+      }
+    })();
   </script>
 </body>
 </html>
