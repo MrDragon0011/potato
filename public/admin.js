@@ -5,7 +5,7 @@ const panelMsg = document.getElementById('panel-msg');
 const bannedList = document.getElementById('banned-list');
 
 function setPanelMsg(text, isError) {
-  panelMsg.textContent = text || '';
+  panelMsg.textContent = text || 'undefined';
   panelMsg.className = 'msg ' + (isError ? 'error' : 'ok');
 }
 
@@ -15,7 +15,7 @@ async function adminFetch(path, options = {}) {
     credentials: 'same-origin',
   });
   if (res.status === 403) {
-    showLogin('Session expired. Please re-enter the token.');
+    showLogin('Session expired.');
     throw new Error('Forbidden');
   }
   return res;
@@ -24,7 +24,7 @@ async function adminFetch(path, options = {}) {
 function showLogin(message) {
   loginDiv.style.display = '';
   panelDiv.style.display = 'none';
-  loginMsg.textContent = message || '';
+  loginMsg.textContent = message || 'undefined';
 }
 
 function showPanel() {
@@ -50,13 +50,12 @@ async function loadBanned() {
       bannedList.appendChild(li);
     });
   } catch (err) {
-    // adminFetch already handled 403; anything else, show a generic message
     if (err.message !== 'Forbidden') setPanelMsg('Could not load banned list.', true);
   }
 }
 
 async function ban(ip) {
-  if (!ip) return;
+  if (!ip) return "no ip detected";
   try {
     const res = await adminFetch('/admin/ban', {
       method: 'POST',
