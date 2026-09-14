@@ -1,3 +1,35 @@
+:root{
+  color-scheme: light;
+  --page-background: #f7f7f7;
+  --surface: #fff;
+  --surface-muted: #f9f9f9;
+  --text: #1a1a1a;
+  --text-muted: #666;
+  --border: #ccc;
+  --border-strong: #000;
+  --control-hover: #f0f0f0;
+  --link: #2d6bce;
+}
+
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --page-background: #1f2329;
+  --surface: #2b3038;
+  --surface-muted: #20252b;
+  --text: #e6edf3;
+  --text-muted: #a9b1bb;
+  --border: #4b5563;
+  --border-strong: #aeb8c4;
+  --control-hover: #3a424d;
+  --link: #79b8ff;
+}
+
+body{
+  margin: 0;
+  background-color: var(--page-background);
+  color: var(--text);
+}
+
 .chat-layout{
   display: flex;
   justify-content: center;
@@ -9,31 +41,31 @@
 .chat-side-left{
   width: 300px;
   height: 800px;
-  border: 0.5px solid #000;
+  border: 0.5px solid var(--border-strong);
   border-radius: 8px;
   font-family: Arial, sans-serif;
   padding: 5px;
-  background-color: white;
+  background-color: var(--surface);
 }
 
 .chat-container{
   width: 500px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   padding:10px;
   border-radius: 8px;
   font-family: Arial, sans-serif;
-  background-color: white;
+  background-color: var(--surface);
 }
 
 .chat-side{
   position: relative;
   width: 300px;
   height: 500px;
-  border: 1px solid #000;
+  border: 1px solid var(--border-strong);
   border-radius: 8px;
   font-family: Arial, sans-serif;
   padding: 8px;
-  background-color: white;
+  background-color: var(--surface);
 }
 
 .settings-btn{
@@ -46,15 +78,15 @@
   padding: 6px;
   font-size: 18px;
   line-height: 1;
-  color: #333;
-  background: #fff;
-  border: 1px solid #ccc;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
 }
 
 .settings-btn:hover{
-  background: #f0f0f0;
+  background: var(--control-hover);
 }
 
 .settings-overlay{
@@ -74,9 +106,30 @@
 .settings-modal{
   width: 400px;
   height: 300px;
-  background: #fff;
+  background: var(--surface);
+  color: var(--text);
   border-radius: 8px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.theme-setting{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.theme-toggle{
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.theme-toggle:hover{
+  background: var(--control-hover);
 }
 
 .chat-side h1,
@@ -93,7 +146,7 @@
 }
 
 .chat-side h1.typing{
-  border-right-color: #000;
+  border-right-color: var(--text);
   animation: caret-blink 0.7s step-end infinite;
 }
 
@@ -118,10 +171,10 @@
 #chat-box{
   height: 400px;
   overflow-y: auto;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   padding: 5px;
   margin-bottom: 10px;
-  background-color: #f9f9f9;
+  background-color: var(--surface-muted);
 }
 
 #message-input{
@@ -154,15 +207,16 @@ button{
 .forum-btn{
   text-align: left;
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
 }
 
 .forum-btn.active{
-  border-color: #000;
-  background: #f0f0f0;
+  border-color: var(--border-strong);
+  background: var(--control-hover);
 }
 
 .forum-label{
@@ -171,7 +225,7 @@ button{
 
 .forum-blurb-inline{
   margin-left: 6px;
-  color: #666;
+  color: var(--text-muted);
   font-weight: normal;
 }
 
@@ -185,7 +239,7 @@ button{
   align-items: center;
   gap: 6px;
   text-decoration: none;
-  color: #2d6bce;
+  color: var(--link);
 }
 
 .gh-icon{
@@ -198,7 +252,7 @@ button{
 
 .tos a{
   text-decoration: none;
-  color: #2d6bce;
+  color: var(--link);
 }
 
 .forum-btn.unread{
@@ -231,13 +285,13 @@ button{
   margin-left: 130px;
   font-size: 15px;
   line-height: 1;
-  color: #333;
-  background: #fff;
-  border: 1px solid #ccc;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
 }
 
 .account-btn:hover{
-  background: #f0f0f0;
+  background: var(--control-hover);
 }
