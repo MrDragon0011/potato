@@ -1,16 +1,24 @@
 const express = require('express');
 const { Redis } = require('@upstash/redis');
+const bycrypt = require('bcryptjs');
+const cookieParser = require('cookie-parser');
+const crypto = require('crypto');
 const app = express();
 app.set('trust proxy', true);
 app.use(express.json({ limit: '20kb' }));
+app.user(cookieParser());
 app.use(express.static('public'));
 const redis = Redis.fromEnv();
 const USERS_KEY = 'users';
+const ACCOUNTS_KEY = 'accounts';
+const SESSIONS_KEY = 'sessions';
 const forum_ids = ['general-discussion','math-on-level', 'math-honors', 'science-lane',  'science-carron', 'humanities-alipour', 'humanities-fox', 'humanities-balan', 'humanities-rutherford'];
 const isForum = (id) => forum_ids.includes(id);
 const messagesKey = (forum) => 'messages:' + forum;
 let messages = {};
 let users = [];
+let accounts = {};
+let sessions = {};
 
 const normalize = (value) => (typeof value === 'string' ? value.trim() : '');
 const truncate = (value, maxLength) => normalize(value).slice(0, maxLength);
@@ -35,6 +43,13 @@ async function loadState() {
 
   const storedUsers = await redis.get(USERS_KEY);
   users = Array.isArray(storedUsers) ? storedUsers : [];
+
+  const storedAccounts = await redis.get(ACCOUNTS_KEY);
+  accounts = storedAccounts && typeof storedAccounts === 'object' ? storedAccounts : {};
+
+  const storedSessions = await redis.get(SESSIONS_KEY);
+  sessions = storedSessions && typeof storedSessions === 'object' ? storedSessions : {};
+
 }
 
 async function rememberUser(name) {
@@ -68,9 +83,70 @@ async function claimUsername(rawName, prevName) {
   return { ok: true, name };
 }
 
+async function startSession(res, lowerUsername) {
+  const token = crypto.randomUUID();
+  sessions[token] = lowerUsername;
+  await redis.set(SESSIONS_KEY, sessions);
+  res.cookie('session', token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 24 * 30, //max 30 days
+  })
+}
+
+function accountForRequest(req) {
+  const token = req.cookies && req.cookies.session;
+  const lower = token && sessions[token];
+  return lower ? accounts[lower] : null;
+}
+
 app.get('/ping', (req, res) => {
   res.send('pong');
 });
+
+app.post('/auth/signup', async (req, res ) => {
+  const username = normalize(req.body.username);
+  const school = truncate(req.body.school, 50);
+  const password = typeof req.body.password === 'string' ? req.body.password : 'undefined';
+
+  if (!username || username.length > 30) {
+    return res.status(400).json({ok: false, error: "Username must be between 1 and 30 characters"});
+  }
+
+  if (!school) {
+    return res.status(400).json({ok: false, error: "School is required"});
+  }
+
+  const lower = username.toLowerCase();
+  if (accounts[lower]) {
+    return res.status(409).json({ok: false, error: "Username is already taken"});
+  }
+
+  const claim = await claimUsername(username, null);
+  if (!claim.ok){
+    return res.status(409).json(claim);
+  }
+
+  const passwordHash = await bycrypt.hash(password, 10);
+  accounts[lower] = {username, passwordHash, school, verfied: false};
+  await redis.set(ACCOUNTS_KEY, accounts);
+
+  await startSession(res, lower);
+  res.json({ok: true, username, school, verified: false});
+})
+
+app.post('/auth/login', async (req, res) =>{
+  const username = normalize(req.body.username);
+  const password = typeof req.body.password === 'string' ? req.body.password : 'undefined';
+  const account = accounts[username.toLowerCase()];
+
+  if (!account || !(await bcrypt.compare(password, account.passwordHash))) {
+    return res.status(401).json({ok: false, error: 'Wrong username or password'});
+  }
+
+  await startSession(res, username.toLowerCase());
+  res.json({ok: true, username: account.username, school: account.school, verified})
+})
 
 app.post('/messages', async (req, res) => {
   const forum = req.body.forum;
